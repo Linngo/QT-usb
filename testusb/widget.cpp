@@ -165,12 +165,27 @@ void Widget::send()
 
 void Widget::handleTimeout()
 {
-    QByteArray buf = QByteArray::fromHex("1D6C0D");
-    buf.append((char)(totalBytes&0xff));
-    buf.append((char)((totalBytes>>8)&0xff));
-    buf.append((char)((totalBytes>>16)&0xff));
-    buf.append((char)((totalBytes>>24)&0xff));
-    qDebug() << buf.toHex();
+    QByteArray buf;
+    switch (group->checkedId())
+    {
+    case 0:/*gujian*/
+        {
+            buf = QByteArray::fromHex("1D6C7F");
+        }
+        break;
+    case 1:/*ziku*/
+        {
+            buf = QByteArray::fromHex("1D6C0D");
+            buf.append((char)(totalBytes&0xff));
+            buf.append((char)((totalBytes>>8)&0xff));
+            buf.append((char)((totalBytes>>16)&0xff));
+            buf.append((char)((totalBytes>>24)&0xff));
+//            qDebug() << buf.toHex();
+        }
+        break;
+    default: ;
+    }
+
     tmcDevice->write(buf);
     buf.resize(0);
     ui->progressBar->setMaximum((qint32)totalBytes);
@@ -214,6 +229,15 @@ bool Widget::startTransfer()
     case 0:/*gujian*/
         {
             //do something
+            QByteArray buf = QByteArray::fromHex("1D6C087F");
+            qDebug() << buf.toHex();
+            tmcDevice->write(buf);
+            buf.resize(0);
+            ui->progressBar->setMinimum(0);
+            ui->progressBar->setMaximum(0);
+            timer = new QTimer(this);
+            connect(timer, SIGNAL(timeout()), this, SLOT(handleTimeout()));
+            timer->start(4000);
         }
         break;
     case 1:/*ziku*/
